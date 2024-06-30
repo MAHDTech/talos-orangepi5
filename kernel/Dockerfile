@@ -63,7 +63,7 @@ RUN --mount=type=cache,target=/kernel/build \
     make -j$(nproc) && \
     make -j$(nproc) modules && \
     make -j$(nproc) dtbs && \
-    make -j$(nproc) dtbs_install
+    make -j$(nproc) dtbs_install __dtbs_install
 
 RUN --mount=type=cache,target=/kernel/build \
     mkdir -p /kernel/out/boot && \

@@ -63,7 +63,7 @@ RUN --mount=type=cache,target=/kernel/build \
     make -j$(nproc) && \
     make -j$(nproc) modules && \
     make -j$(nproc) dtbs && \
-    make -j$(nproc) -C arch/arm64/boot/dts/rockchip overlay
+    make -j$(nproc) -C arch/arm64/boot/dts/rockchip/overlay dtbo-y
 
 RUN --mount=type=cache,target=/kernel/build \
     mkdir -p /kernel/out/boot && \

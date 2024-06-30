@@ -21,7 +21,7 @@ var kernelArgs = []string{
 	"talos.dashboard.disabled=1",
 }
 
-type boardExtraOptions struct {}
+type boardExtraOptions struct{}
 
 type BoardInstaller struct{}
 

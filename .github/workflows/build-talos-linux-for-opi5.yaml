@@ -1,0 +1,231 @@
+name: Build Talos Linux for Orange Pi 5
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+env:
+  BUILDX_NO_DEFAULT_ATTESTATIONS: 1
+  SOURCE_DATE_EPOCH: 1704063600
+
+jobs:
+  build-kernel:
+    name: Build Linux for Orange Pi 5
+    runs-on:
+      - self-hosted
+      - talos-orangepi5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to registry
+        uses: docker/login-action@v3
+        with:
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: remote
+          endpoint: ${{ vars.BUILDKIT_REMOTE_ENDPOINT }}
+
+      - name: Expose GitHub Runtime
+        uses: crazy-max/ghaction-github-runtime@v3
+
+      - name: Get dependencies versions
+        id: depver
+        run: |
+          make depver >> $GITHUB_OUTPUT
+
+      - name: Cache kernel build
+        id: cache-kernel-build
+        uses: actions/cache@v4
+        with:
+          save-always: true
+          path: kernel-build
+          key: kernel-${{ steps.depver.outputs.KERNEL_TAG }}-${{ github.ref_name }}-${{ hashFiles('kernel/*') }}-build
+
+      - name: Inject kernel build cache into buildx
+        uses: reproducible-containers/buildkit-cache-dance@v2.1.4
+        with:
+          cache-source: kernel-build
+          cache-target: /kernel/build
+          skip-extraction: ${{ steps.cache-kernel-build.outputs.cache-hit }}
+
+      - name: Build & push kernel
+        run: |
+          make kernel \
+            PUSH=true \
+            BUILD_ARGS="\
+              --cache-from=type=gha,url=$ACTIONS_CACHE_URL,token=$ACTIONS_RUNTIME_TOKEN,scope=kernel \
+              --cache-to=type=gha,mode=max,url=$ACTIONS_CACHE_URL,token=$ACTIONS_RUNTIME_TOKEN,scope=kernel\
+            "
+
+  build-imager:
+    name: Build Talos imager for Orange Pi 5
+    runs-on:
+      - self-hosted
+      - talos-orangepi5
+    needs: build-kernel
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to registry
+        uses: docker/login-action@v3
+        with:
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: remote
+          endpoint: ${{ vars.BUILDKIT_REMOTE_ENDPOINT }}
+
+      - name: Expose GitHub Runtime
+        uses: crazy-max/ghaction-github-runtime@v3
+
+      - name: Get dependencies versions
+        id: depver
+        run: |
+          make depver >> $GITHUB_OUTPUT
+
+      - name: Cache Talos sources
+        id: cache-talos
+        uses: actions/cache@v4
+        with:
+          save-always: true
+          path: talos
+          key: talos-${{ steps.depver.outputs.TALOS_TAG }}-${{ github.ref_name }}-sources
+
+      - name: Build & push Talos imager
+        run: |
+          make imager \
+            PUSH=true \
+            SOURCE_DATE_EPOCH=${{ env.SOURCE_DATE_EPOCH }} \
+            BUILD_ARGS="\
+              --cache-from=type=gha,url=$ACTIONS_CACHE_URL,token=$ACTIONS_RUNTIME_TOKEN,scope=imager \
+              --cache-to=type=gha,mode=max,url=$ACTIONS_CACHE_URL,token=$ACTIONS_RUNTIME_TOKEN,scope=imager\
+            "
+
+  build-installer:
+    name: Build Talos installer for Orange Pi 5
+    needs: build-kernel
+    runs-on:
+      - self-hosted
+      - talos-orangepi5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to registry
+        uses: docker/login-action@v3
+        with:
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: remote
+          endpoint: ${{ vars.BUILDKIT_REMOTE_ENDPOINT }}
+
+      - name: Expose GitHub Runtime
+        uses: crazy-max/ghaction-github-runtime@v3
+
+      - name: Cache go mods
+        id: cache-gomod
+        uses: actions/cache@v4
+        with:
+          save-always: true
+          path: installer-gomod
+          key: installer-gomod-${{ github.ref_name }}-${{ hashFiles('installer/*') }}-build
+
+      - name: Cache go build
+        id: cache-go
+        uses: actions/cache@v4
+        with:
+          save-always: true
+          path: installer-go
+          key: installer-go-${{ github.ref_name }}-${{ hashFiles('installer/*') }}-build
+
+      - name: Inject go mods into buildx
+        uses: reproducible-containers/buildkit-cache-dance@v2.1.4
+        with:
+          cache-source: installer-gomod
+          cache-target: /.cache/gomod
+          skip-extraction: ${{ steps.cache-gomod.outputs.cache-hit }}
+
+      - name: Inject go cache into buildx
+        uses: reproducible-containers/buildkit-cache-dance@v2.1.4
+        with:
+          cache-source: installer-go
+          cache-target: /.cache/go
+          skip-extraction: ${{ steps.cache-go.outputs.cache-hit }}
+
+      - name: Build & push Talos installer
+        run: |
+          make installer \
+            PUSH=true \
+            SOURCE_DATE_EPOCH=${{ env.SOURCE_DATE_EPOCH }} \
+            BUILD_ARGS="\
+              --cache-from=type=gha,url=$ACTIONS_CACHE_URL,token=$ACTIONS_RUNTIME_TOKEN,scope=installer \
+              --cache-to=type=gha,mode=max,url=$ACTIONS_CACHE_URL,token=$ACTIONS_RUNTIME_TOKEN,scope=installer\
+            "
+
+  generate-images:
+    name: Generate Talos Linux images for Orange Pi 5
+    needs: [build-kernel, build-imager, build-installer]
+    runs-on:
+      - self-hosted
+      - talos-orangepi5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to registry
+        uses: docker/login-action@v3
+        with:
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+
+      - name: Setup crane
+        uses: imjasonh/setup-crane@v0.4
+
+      - name: Generate artifacts
+        run: |
+          make artifacts ARTIFACTS=${{ github.workspace }}/out
+
+      - name: Push images artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: images
+          path: out/**/*
+
+  release:
+    name: Release Talos Linux for Orange Pi 5
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
+    needs: [generate-images]
+    runs-on:
+      - self-hosted
+      - talos-orangepi5
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          name: ${{ github.ref }} - Talos Linux for Orange Pi 5
+          makeLatest: "legacy"
+          generateReleaseNotes: true
+          artifacts: "**/*"

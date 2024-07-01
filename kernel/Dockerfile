@@ -62,8 +62,9 @@ RUN --mount=type=cache,target=/kernel/build \
     make -j$(nproc) olddefconfig && \
     make -j$(nproc) && \
     make -j$(nproc) modules && \
-    make -j$(nproc) -d dtbs && \
-    make -j$(nproc) -d rockchip/overlay/orangepi-5-sata.dtbo rockchip/overlay/orangepi-5-plus-sata2.dtbo
+    make -j$(nproc) dtbs && \
+    dtc -@ -I dts -O dtb -o arch/arm64/boot/dts/rockchip/overlay/orangepi-5-plus-sata2.dtbo arch/arm64/boot/dts/rockchip/overlay/orangepi-5-plus-sata2.dts && \
+    dtc -@ -I dts -O dtb -o arch/arm64/boot/dts/rockchip/overlay/orangepi-5-sata.dtbo arch/arm64/boot/dts/rockchip/overlay/orangepi-5-sata.dts
 
 RUN --mount=type=cache,target=/kernel/build \
     mkdir -p /kernel/out/boot && \

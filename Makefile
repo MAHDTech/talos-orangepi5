@@ -136,13 +136,16 @@ artifacts: images dt
 $(ARTIFACTS_FOLDER):
 	mkdir -p $@
 
+
+#	Device tree
+
 .PHONY: dt
 dt: $(ARTIFACTS_FOLDER)
 	$(EXPORT) $(INSTALLER_OUTPUT_IMAGE) - | tar -xf - -C $(ARTIFACTS_FOLDER) artifacts/dtb && \
 		mv $(ARTIFACTS_FOLDER)/artifacts/dtb $(ARTIFACTS_FOLDER)/dtb && \
 		rm -rf $(ARTIFACTS_FOLDER)/artifacts
 
-###### Images ######
+#	Images
 
 .PHONY: images
 images: image-metal image-pxe

@@ -28,6 +28,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     libssl-dev \
     libzstd-dev \
     python3 \
+    python3-dev \
     python3-pip \
     swig \
     u-boot-tools \

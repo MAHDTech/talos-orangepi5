@@ -60,6 +60,7 @@ RUN --mount=type=cache,target=/kernel/build \
 
 WORKDIR /kernel/src
 RUN --mount=type=cache,target=/kernel/build \
+    sed -i 's/KBUILD_CFLAGS   := -Wall/KBUILD_CFLAGS   := -Wno-error/' Makefile && \
     make -j$(nproc) olddefconfig && \
     make -j$(nproc) && \
     make -j$(nproc) modules && \

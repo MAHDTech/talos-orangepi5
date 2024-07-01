@@ -29,6 +29,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     libzstd-dev \
     python3 \
     python3-pip \
+    swig \
     u-boot-tools \
     && rm -rf /var/lib/apt/lists/* && \
     pip3 install dtschema

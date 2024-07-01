@@ -11,7 +11,7 @@ ARTIFACTS_FOLDER ?= ./out
 TAG ?= $(shell git describe --tag --always --dirty)
 
 KERNEL_TAG ?= 6.1
-KERNEL_SOURCE ?= https://github.com/armbian/linux-rockchip/archive/refs/heads/rk-${KERNEL_TAG}-rkr1.zip
+KERNEL_SOURCE ?= https://github.com/armbian/linux-rockchip/archive/refs/heads/rk-${KERNEL_TAG}-rkr1.tar.gz
 KERNEL_TAG_SEMVER ?= $(shell echo $(KERNEL_TAG) | sed 's/^\([0-9]*\.[0-9]*\)$$/\1.0/')
 KERNEL_TAINT ?= -$(NAME)
 KERNEL_VERSION ?= $(KERNEL_TAG_SEMVER)$(KERNEL_TAINT)

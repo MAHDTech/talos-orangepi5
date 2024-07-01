@@ -33,7 +33,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     swig \
     u-boot-tools \
     && rm -rf /var/lib/apt/lists/* && \
-    pip3 install dtschema
+    pip3 install \
+        dtschema \
+        yamllint
 
 FROM base AS downloader
 
@@ -66,8 +68,8 @@ RUN --mount=type=cache,target=/kernel/build \
     make -j$(nproc) olddefconfig && \
     make -j$(nproc) && \
     make -j$(nproc) modules && \
-    make -j$(nproc) dtbs_check dtbs
-    #make -j$(nproc) rockchip/overlay/orangepi-5-sata.dtbo rockchip/overlay/orangepi-5-plus-sata2.dtbo
+    make -j$(nproc) dtbs_check dtbs \
+        rockchip/overlay/orangepi-5-sata.dtbo rockchip/overlay/orangepi-5-plus-sata2.dtbo
 
 RUN --mount=type=cache,target=/kernel/build \
     mkdir -p /kernel/out/boot && \

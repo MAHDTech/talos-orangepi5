@@ -16,7 +16,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     build-essential \
     ca-certificates \
     curl \
-    dt-schema \
     dwarves \
     flex \
     git \
@@ -30,7 +29,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     libzstd-dev \
     python3 \
     u-boot-tools \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* && \
+    pip3 install dtschema
 
 FROM base AS downloader
 

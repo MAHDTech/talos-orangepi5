@@ -28,14 +28,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     libssl-dev \
     libzstd-dev \
     python3 \
-    python3-dev \
-    python3-pip \
-    swig \
     u-boot-tools \
-    && rm -rf /var/lib/apt/lists/* && \
-    pip3 install \
-        dtschema \
-        yamllint
+    && rm -rf /var/lib/apt/lists/*
 
 FROM base AS downloader
 
@@ -68,8 +62,8 @@ RUN --mount=type=cache,target=/kernel/build \
     make -j$(nproc) olddefconfig && \
     make -j$(nproc) && \
     make -j$(nproc) modules && \
-    make -j$(nproc) dtbs_check dtbs \
-        rockchip/overlay/orangepi-5-sata.dtbo rockchip/overlay/orangepi-5-plus-sata2.dtbo
+    make -j$(nproc) -d dtbs && \
+    make -j$(nproc) -d rockchip/overlay/orangepi-5-sata.dtbo rockchip/overlay/orangepi-5-plus-sata2.dtbo
 
 RUN --mount=type=cache,target=/kernel/build \
     mkdir -p /kernel/out/boot && \

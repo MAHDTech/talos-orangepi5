@@ -7225,7 +7225,7 @@ CONFIG_RK_FLASH=y
 #
 # Headset device support
 #
-CONFIG_RK_HEADSET=y
+# CONFIG_RK_HEADSET is not set
 # end of Headset device support
 
 #

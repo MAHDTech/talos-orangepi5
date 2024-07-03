@@ -67,19 +67,19 @@ RUN --mount=type=cache,target=/kernel/build \
     make -j$(nproc) dtbs
 
 RUN --mount=type=cache,target=/kernel/build \
-    dtc -I dts -O dtb -o /kernel/build/arch/arm64/boot/dts/rockchip/rk3588s-orangepi-5-sata.dtb \
-        -b 0 -@ arch/arm64/boot/dts/rockchip/rk3588s-orangepi-5.dts \
-        arch/arm64/boot/dts/rockchip/overlay/orangepi-5-sata.dts && \
-    dtc -I dts -O dtb -o /kernel/build/arch/arm64/boot/dts/rockchip/rk3588-orangepi-5-plus-sata1-2.dtb \
-        -b 0 -@ arch/arm64/boot/dts/rockchip/rk3588-orangepi-5-plus.dts \
-        arch/arm64/boot/dts/rockchip/overlay/orangepi-5-sata.dts \
-        arch/arm64/boot/dts/rockchip/overlay/orangepi-5-plus-sata2.dts && \
-    dtc -I dts -O dtb -o /kernel/build/arch/arm64/boot/dts/rockchip/rk3588-orangepi-5-plus-sata1.dtb \
-        -b 0 -@ arch/arm64/boot/dts/rockchip/rk3588-orangepi-5-plus.dts \
-        arch/arm64/boot/dts/rockchip/overlay/rk3588s-orangepi-5.dts && \
-    dtc -I dts -O dtb -o /kernel/build/arch/arm64/boot/dts/rockchip/rk3588-orangepi-5-plus-sata2.dtb \
-        -b 0 -@ arch/arm64/boot/dts/rockchip/rk3588-orangepi-5-plus.dts \
-        arch/arm64/boot/dts/rockchip/overlay/orangepi-5-plus-sata2.dts
+    fdtoverlay -o  /kernel/build/arch/arm64/boot/dts/rockchip/rk3588s-orangepi-5-sata.dtb \
+        -i /kernel/build/arch/arm64/boot/dts/rockchip/rk3588s-orangepi-5.dtb \
+        /kernel/build/arch/arm64/boot/dts/rockchip/overlay/orangepi-5-sata.dtbo && \
+    fdtoverlay -o  /kernel/build/arch/arm64/boot/dts/rockchip/rk3588-orangepi-5-plus-sata1-2.dtb \
+        -i /kernel/build/arch/arm64/boot/dts/rockchip/rk3588-orangepi-5-plus.dtb \
+        /kernel/build/arch/arm64/boot/dts/rockchip/overlay/orangepi-5-sata.dtbo \
+        /kernel/build/arch/arm64/boot/dts/rockchip/overlay/orangepi-5-plus-sata2.dtbo && \
+    fdtoverlay -o  /kernel/build/arch/arm64/boot/dts/rockchip/rk3588-orangepi-5-plus-sata1.dtb \
+        -i /kernel/build/arch/arm64/boot/dts/rockchip/rk3588-orangepi-5-plus.dtb \
+        /kernel/build/arch/arm64/boot/dts/rockchip/overlay/rk3588s-orangepi-5.dtbo && \
+    fdtoverlay -o  /kernel/build/arch/arm64/boot/dts/rockchip/rk3588-orangepi-5-plus-sata2.dtb \
+        -i /kernel/build/arch/arm64/boot/dts/rockchip/rk3588-orangepi-5-plus.dtb \
+        /kernel/build/arch/arm64/boot/dts/rockchip/overlay/orangepi-5-plus-sata2.dtbo
 
 RUN --mount=type=cache,target=/kernel/build \
     mkdir -p /kernel/out/boot && \
